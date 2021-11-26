@@ -5,6 +5,7 @@ class Arco{
     int peso;
     public:
         int getPeso(){return this->peso;}
+        void setPeso(int peso){this->peso = peso;}
         T getValorNodoDestino(){return this->valorNodoDestino;}
         //Agregar metodos sets
         Arco(T valorNodoDestino,int peso){

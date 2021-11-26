@@ -21,24 +21,66 @@ class Grafo{
             return nullptr;            
         }    
 
-        void insertarNodoGrafo(T valor){
-            //Si el nodo no existe
-            if(!this->buscarNodoGrafo(valor)){
-                this->nodos->agregarInicio(new NodoGrafo<T>(valor));
+        void insertarNodoGrafo(T valorOrigen, T valorDestino){
+            //Revisar para el nodo origen
+            NodoGrafo<T>* nodoOrigen = this->buscarNodoGrafo(valorOrigen);
+            if(!this->buscarNodoGrafo(valorOrigen)){
+                nodoOrigen = new NodoGrafo<T>(valorOrigen);
+                this->nodos->agregarInicio(nodoOrigen);
                 this->tam++;
-            }else
-                cout<<"Nodo existente"<<endl;
+
+            }else{
+                cout<<"Nodo Origen existente"<<endl;}
+            
+            nodoOrigen->addFallasGeneradas(); //origen genera falla
+
+            //Revisar para el nodo destino
+            NodoGrafo<T>* nodoDestino = this->buscarNodoGrafo(valorDestino);
+            if(!this->buscarNodoGrafo(valorDestino)){
+                nodoDestino = new NodoGrafo<T>(valorOrigen);
+                this->nodos->agregarInicio(nodoDestino);
+                this->tam++;
+
+            }else{
+                cout<<"Nodo Destino existente"<<endl;}
+
+            nodoDestino->addFallaRecibida();  // destino recibe falla
+
+            // agregar arco
+            this->agregarArco(valorOrigen, valorDestino,0);
+                 
         }
 
         void agregarArco(T valorNodoOrigen, T valorNodoDestino, int peso){
             //Validar la existencia de los nodos origen y destino
             NodoGrafo<T> * origen=this->buscarNodoGrafo(valorNodoOrigen);
             NodoGrafo<T> * destino=this->buscarNodoGrafo(valorNodoDestino);
-            if(origen&&destino)
-                origen->getArcos()->agregarInicio(new Arco<T>(valorNodoDestino,peso));
+            if(origen&&destino){
+                // si ambos existen revisar si la conexion ya existe
+                
+                if (origen->getArcos()->getTam() > 0){ // el nodo tiene conexiones
+                    // buscar conexion
+                    NodoT<Arco<T>*> * arco = origen->getArcos()->getHead();
+                    while(arco){
+                        if (arco->getDato()->getValorNodoDestino() == valorNodoDestino){
+                            // la conexion existe
+                            arco->getDato()->setPeso(arco->getDato()->getPeso() + 1);
+                            return;
+                        }
+                        arco=arco->getSiguiente();
+                    }
+                    // la conexion no existe
+                    origen->getArcos()->agregarInicio(new Arco<T>(valorNodoDestino,1));
+                }
+                else{
+                    // la conexion no existe, crearla con peso en 0
+                    origen->getArcos()->agregarInicio(new Arco<T>(valorNodoDestino,1));
+                }
+            }
             else
                 cout<<"Ambos nodos tanto origen como destino deben existir"<<endl;
         }
+
 
         void imprimirGrafo(){
             NodoT<NodoGrafo<T>*> * nodo=this->nodos->getHead();
@@ -51,6 +93,7 @@ class Grafo{
                     cout<<"->"<<arco->getDato()->getValorNodoDestino()<<":"<<arco->getDato()->getPeso()<<" ";
                     arco=arco->getSiguiente();
                 }
+                cout<<endl;
                 cout<<endl;
                 nodo=nodo->getSiguiente();                
             }
@@ -91,5 +134,27 @@ class Grafo{
             }else{
                 cout<<"Grafo vacio"<<endl;
             }
+        }
+
+        void ipGeneraMasFallas(){
+            NodoT<NodoGrafo<T>*> * nodoG = this->nodos->getHead();
+            int masFallasNum = 0;
+            while(nodoG){
+                if(nodoG->getDato()->getFallasGeneradas() > masFallasNum){
+                    masFallasNum = nodoG->getDato()->getFallasGeneradas();
+                }
+                nodoG = nodoG->getSiguiente();
+            }
+
+            cout << "Los o el nodo con mas fallas generadas generan " << masFallasNum << " fallas y son: " <<endl;
+            nodoG = this->nodos->getHead();
+            while(nodoG){
+                if(nodoG->getDato()->getFallasGeneradas() == masFallasNum){
+                    cout << "    "<< nodoG->getDato()->getValor() << endl;
+                }
+                nodoG = nodoG->getSiguiente();
+            }
+
+            cout << endl;
         }
 };

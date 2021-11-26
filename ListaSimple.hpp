@@ -10,6 +10,8 @@ class ListaSimple{
             this->head=nullptr;
             this->tam=0;
         }
+
+        int getTam(){return this->tam;}
         void agregarInicio(T valor){
             //Crear el nuevo nodo y actualizar la referencia 
             NodoT<T> * nuevo= new NodoT<T>(valor,this->head);
@@ -45,7 +47,7 @@ class ListaSimple{
             }
             cout<<endl;            
         }
-
+ 
         NodoT<T> * buscarNodo(T dato){
             NodoT<T> * nodo=this->head;
             while(nodo){
