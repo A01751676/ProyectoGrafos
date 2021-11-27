@@ -7,7 +7,7 @@ class Grafo{
     ListaSimple<NodoGrafo<T> *> * nodos;
     public:
         Grafo(){
-            this->tam=0;
+            this->tam=0; 
             this->nodos=new ListaSimple<NodoGrafo<T>*>();
         }
         NodoGrafo<T> * buscarNodoGrafo(T valor){
@@ -24,30 +24,31 @@ class Grafo{
         void insertarNodoGrafo(T valorOrigen, T valorDestino){
             //Revisar para el nodo origen
             NodoGrafo<T>* nodoOrigen = this->buscarNodoGrafo(valorOrigen);
-            if(!this->buscarNodoGrafo(valorOrigen)){
+            if(!nodoOrigen){
                 nodoOrigen = new NodoGrafo<T>(valorOrigen);
                 this->nodos->agregarInicio(nodoOrigen);
                 this->tam++;
 
             }else{
-                cout<<"Nodo Origen existente"<<endl;}
-            
-            nodoOrigen->addFallasGeneradas(); //origen genera falla
-
+                //cout<<"Nodo Origen existente"<<endl;
+                }
+    
             //Revisar para el nodo destino
             NodoGrafo<T>* nodoDestino = this->buscarNodoGrafo(valorDestino);
-            if(!this->buscarNodoGrafo(valorDestino)){
-                nodoDestino = new NodoGrafo<T>(valorOrigen);
+            if(!nodoDestino){
+                nodoDestino = new NodoGrafo<T>(valorDestino);
                 this->nodos->agregarInicio(nodoDestino);
                 this->tam++;
 
             }else{
-                cout<<"Nodo Destino existente"<<endl;}
+                //cout<<"Nodo Destino existente"<<endl;
+                }
 
+            nodoOrigen->addFallasGeneradas(); //origen genera falla
             nodoDestino->addFallaRecibida();  // destino recibe falla
 
             // agregar arco
-            this->agregarArco(valorOrigen, valorDestino,0);
+            this->agregarArco(valorOrigen, valorDestino,1);
                  
         }
 
@@ -70,11 +71,11 @@ class Grafo{
                         arco=arco->getSiguiente();
                     }
                     // la conexion no existe
-                    origen->getArcos()->agregarInicio(new Arco<T>(valorNodoDestino,1));
+                    origen->getArcos()->agregarInicio(new Arco<T>(valorNodoDestino,peso));
                 }
                 else{
                     // la conexion no existe, crearla con peso en 0
-                    origen->getArcos()->agregarInicio(new Arco<T>(valorNodoDestino,1));
+                    origen->getArcos()->agregarInicio(new Arco<T>(valorNodoDestino,peso));
                 }
             }
             else
@@ -156,5 +157,69 @@ class Grafo{
             }
 
             cout << endl;
+        }
+
+        void ipRecibeMasFallas(){
+            NodoT<NodoGrafo<T>*> * nodoG = this->nodos->getHead();
+            int masFallasNum = 0;
+            while(nodoG){
+                if(nodoG->getDato()->getFallasRecibidas() > masFallasNum){
+                    masFallasNum = nodoG->getDato()->getFallasRecibidas();
+                }
+                nodoG = nodoG->getSiguiente();
+            }
+
+            cout << "Los o el nodo con mas fallas recibidas recibió " << masFallasNum << " fallas y son: " <<endl;
+            nodoG = this->nodos->getHead();
+            while(nodoG){
+                if(nodoG->getDato()->getFallasRecibidas() == masFallasNum){
+                    cout << "    "<< nodoG->getDato()->getValor() << endl;
+                }
+                nodoG = nodoG->getSiguiente();
+            }
+
+            cout << endl;
+        }
+
+        void DepthFirst(NodoGrafo<T> * nodoG){
+            //Crear la fila de control
+            Fila<NodoGrafo<T> *> * fila = new Fila<NodoGrafo<T> *>();
+            //Inicializar procesado de cada NodoGrafo
+            NodoT<NodoGrafo<T>*> * actual=this->nodos->getHead();
+            if(actual){
+                while(actual){
+                    actual->getDato()->setProcesado(false);
+                    actual=actual->getSiguiente();
+                }
+                
+                //Metemos el NodoGrafo por el que inicia el recorrido
+                
+                fila->push(nodoG);
+                while(fila->front()){
+
+                    NodoGrafo<T> * aux = fila->pop()->getDato();
+                    //Imprimo el valor del nodoGrafo
+                    if(! aux->getProcesado()){
+                        cout<< aux->getValor()<<" ";
+                        aux->setProcesado(true);
+                    }
+
+                    //Checar las conexiones sin procesar
+                    NodoT<Arco<T>*> * con=aux->getArcos()->getHead();
+                    while(con){
+                        NodoGrafo<T> * vecino = this->buscarNodoGrafo(con->getDato()->getValorNodoDestino());
+                        if(!vecino->getProcesado()){
+                            //vecino->setProcesado(true);
+                            //Meter a la fila
+                            fila->push(vecino);
+                        }
+                        con=con->getSiguiente();
+                    }
+                }
+                cout<<endl;
+
+            }else{
+                cout<<"Grafo vacio"<<endl;
+            }
         }
 };
